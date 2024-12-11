@@ -4,7 +4,24 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/ShellyKelly1/jenk.git'
+                script {
+                    if (fileExists('.git')) {
+                        echo 'Git repository exists, fetching updates'
+                        sh 'git fetch'
+
+                        def changes = sh(script: 'git rev-list HEAD..origin/main --count', returnStdout: true).trim()
+
+                        if (changes == '0') {
+                            echo 'No updates found in the repository'
+                        } else {
+                            echo 'Updates found, pulling changes'
+                            sh 'git pull'
+                        }
+                    } else {
+                        echo 'Cloning new repository'
+                        git branch: 'main', url: 'https://github.com/ShellyKelly1/jenk'
+                    }
+                }
             }
         }
 
